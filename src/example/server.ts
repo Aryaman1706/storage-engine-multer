@@ -14,16 +14,49 @@ const storage = new Storage({
 
 const bucket = storage.bucket("av-mailer-396d7.appspot.com");
 
-const gcStorage = GcsEngine({
+// * Without Validator -->
+const gcStorageWithoutValidator = GcsEngine({
   bucket,
 });
 
-const upload = multer({
-  storage: gcStorage,
+const uploadWithoutValidator = multer({
+  storage: gcStorageWithoutValidator,
+}).single("file");
+
+app.post(
+  "/upload-without-validator",
+  uploadWithoutValidator,
+  (_req: Request, res: Response) => {
+    res.send("Hopefully file is uploaded");
+  }
+);
+// * -->
+
+// * With Validator -->
+const validator = (req: Request) => {
+  if (!req.body.email || !req.body.password) {
+    return "Email or password missing";
+  }
+
+  return null;
+};
+
+const gcStorageWithValidator = GcsEngine({
+  bucket,
+  validator: validator,
 });
 
-app.post("/upload", upload.single("file"), (_req: Request, res: Response) => {
-  res.send("Hopefully file is uploaded");
-});
+const uploadWithValidator = multer({
+  storage: gcStorageWithValidator,
+}).single("file");
+
+app.post(
+  "/upload-with-validator",
+  uploadWithValidator,
+  (_req: Request, res: Response) => {
+    res.send("Hopefully file is uploaded");
+  }
+);
+// * -->
 
 app.listen(5000, () => console.log("Server started on port 5000"));
