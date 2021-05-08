@@ -50,9 +50,11 @@ class CustomStorageEngine implements multer.StorageEngine {
     }
 
     if (this.validator) {
+      // Validator is defined
       const validationError = this.validator(req);
 
       if (validationError) {
+        // If validator function returned a string which means there was an error
         cb(new Error(validationError));
         return;
       }
